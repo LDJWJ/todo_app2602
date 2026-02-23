@@ -1,0 +1,384 @@
+<!DOCTYPE html>
+<html lang="ko">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>하루 체크리스트 (Daily Checklist)</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600&display=swap');
+
+        :root {
+            --bg-gradient: linear-gradient(135deg, #0f2027, #203a43, #2c5364);
+            --card-bg: rgba(255, 255, 255, 0.05);
+            --text-color: #f1f1f1;
+            --primary-color: #00d2ff;
+            --secondary-color: #3a7bd5;
+            --danger-color: #ff416c;
+            --border-color: rgba(255, 255, 255, 0.1);
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Outfit', sans-serif;
+        }
+
+        body {
+            background: var(--bg-gradient);
+            color: var(--text-color);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .container {
+            background: var(--card-bg);
+            backdrop-filter: blur(15px);
+            -webkit-backdrop-filter: blur(15px);
+            border: 1px solid var(--border-color);
+            border-radius: 20px;
+            padding: 40px;
+            width: 100%;
+            max-width: 500px;
+            box-shadow: 0 10px 40px 0 rgba(0, 0, 0, 0.4);
+        }
+
+        h1 {
+            text-align: center;
+            margin-bottom: 30px;
+            font-weight: 600;
+            font-size: 2.2rem;
+            background: -webkit-linear-gradient(right, var(--primary-color), var(--secondary-color));
+            background-clip: text;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            letter-spacing: 1px;
+        }
+
+        .input-section {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 30px;
+        }
+
+        #taskInput {
+            flex: 1;
+            padding: 15px 20px;
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            background: rgba(255, 255, 255, 0.05);
+            color: var(--text-color);
+            font-size: 1.05rem;
+            outline: none;
+            transition: all 0.3s ease;
+        }
+
+        #taskInput::placeholder {
+            color: rgba(255, 255, 255, 0.4);
+        }
+
+        #taskInput:focus {
+            background: rgba(255, 255, 255, 0.1);
+            border-color: rgba(0, 210, 255, 0.5);
+            box-shadow: 0 0 15px rgba(0, 210, 255, 0.2);
+        }
+
+        #addBtn {
+            padding: 15px 25px;
+            border: none;
+            border-radius: 12px;
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            color: white;
+            font-size: 1.05rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+
+        #addBtn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(0, 210, 255, 0.4);
+        }
+
+        #addBtn:active {
+            transform: translateY(1px);
+        }
+
+        .task-list {
+            list-style: none;
+            max-height: 50vh;
+            overflow-y: auto;
+            padding-right: 5px;
+        }
+
+        .task-list::-webkit-scrollbar {
+            width: 5px;
+        }
+
+        .task-list::-webkit-scrollbar-thumb {
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 5px;
+        }
+
+        .task-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid transparent;
+            padding: 16px 20px;
+            border-radius: 14px;
+            margin-bottom: 12px;
+            transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+            animation: fadeIn 0.4s ease forwards;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(15px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes fadeOut {
+            from {
+                opacity: 1;
+                transform: translateX(0);
+            }
+
+            to {
+                opacity: 0;
+                transform: translateX(-20px);
+            }
+        }
+
+        .task-item:hover {
+            background: rgba(255, 255, 255, 0.08);
+            border-color: rgba(255, 255, 255, 0.1);
+            transform: translateX(4px);
+        }
+
+        .task-content {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            cursor: pointer;
+            flex: 1;
+        }
+
+        .checkbox {
+            width: 22px;
+            height: 22px;
+            border-radius: 6px;
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            transition: all 0.2s ease;
+            position: relative;
+        }
+
+        .task-item:hover .checkbox {
+            border-color: var(--primary-color);
+        }
+
+        .task-item.completed .checkbox {
+            background: var(--primary-color);
+            border-color: var(--primary-color);
+        }
+
+        .task-item.completed .checkbox::after {
+            content: "✓";
+            color: #000;
+            font-size: 14px;
+            font-weight: 900;
+        }
+
+        .task-text {
+            font-size: 1.1rem;
+            transition: all 0.3s ease;
+            word-break: break-word;
+            line-height: 1.4;
+        }
+
+        .task-item.completed .task-text {
+            text-decoration: line-through;
+            color: rgba(255, 255, 255, 0.3);
+        }
+
+        .delete-btn {
+            background: none;
+            border: none;
+            color: rgba(255, 255, 255, 0.3);
+            cursor: pointer;
+            font-size: 1.5rem;
+            transition: all 0.2s ease;
+            padding: 5px;
+            border-radius: 5px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .delete-btn:hover {
+            color: var(--danger-color);
+            background: rgba(255, 65, 108, 0.1);
+        }
+
+        .empty-state {
+            text-align: center;
+            color: rgba(255, 255, 255, 0.4);
+            margin-top: 30px;
+            padding: 20px;
+            font-size: 1.1rem;
+            background: rgba(255, 255, 255, 0.02);
+            border-radius: 12px;
+            border: 1px dashed rgba(255, 255, 255, 0.1);
+        }
+
+        /* Stats */
+        .stats {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 20px;
+            padding-top: 20px;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+            font-size: 0.9rem;
+            color: rgba(255, 255, 255, 0.6);
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="container">
+        <h1>하루 체크리스트</h1>
+
+        <div class="input-section">
+            <input type="text" id="taskInput" placeholder="오늘 할 일은 무엇인가요?" autocomplete="off">
+            <button id="addBtn">추가</button>
+        </div>
+
+        <ul class="task-list" id="taskList">
+            <!-- Tasks will be rendered here via JS -->
+        </ul>
+
+        <div class="empty-state" id="emptyState" style="display: none;">
+            ✨ 아직 설정된 할 일이 없습니다!<br>오늘의 목표를 추가해 보세요.
+        </div>
+
+        <div class="stats">
+            <span id="totalTasks">총 0개</span>
+            <span id="completedTasks">완료 0개</span>
+        </div>
+    </div>
+
+    <script>
+        const taskInput = document.getElementById('taskInput');
+        const addBtn = document.getElementById('addBtn');
+        const taskList = document.getElementById('taskList');
+        const emptyState = document.getElementById('emptyState');
+        const totalTasksEl = document.getElementById('totalTasks');
+        const completedTasksEl = document.getElementById('completedTasks');
+
+        let tasks = JSON.parse(localStorage.getItem('daily_checklist_tasks_v2')) || [];
+
+        function saveTasks() {
+            localStorage.setItem('daily_checklist_tasks_v2', JSON.stringify(tasks));
+        }
+
+        function updateStats() {
+            const completedCount = tasks.filter(t => t.completed).length;
+            totalTasksEl.innerText = `총 ${tasks.length}개`;
+            completedTasksEl.innerText = `완료 ${completedCount}개`;
+        }
+
+        function renderTasks() {
+            taskList.innerHTML = '';
+
+            if (tasks.length === 0) {
+                emptyState.style.display = 'block';
+            } else {
+                emptyState.style.display = 'none';
+
+                tasks.forEach((task, index) => {
+                    const li = document.createElement('li');
+                    li.className = `task-item ${task.completed ? 'completed' : ''}`;
+
+                    li.innerHTML = `
+                        <div class="task-content" onclick="toggleTask(${index})">
+                            <div class="checkbox"></div>
+                            <span class="task-text">${escapeHTML(task.text)}</span>
+                        </div>
+                        <button class="delete-btn" onclick="deleteTask(${index})" title="삭제">&times;</button>
+                    `;
+
+                    taskList.appendChild(li);
+                });
+            }
+            updateStats();
+        }
+
+        function escapeHTML(str) {
+            return str.replace(/[&<>'"]/g,
+                tag => ({
+                    '&': '&amp;',
+                    '<': '&lt;',
+                    '>': '&gt;',
+                    "'": '&#39;',
+                    '"': '&quot;'
+                }[tag] || tag)
+            );
+        }
+
+        function addTask() {
+            const text = taskInput.value.trim();
+            if (text) {
+                tasks.push({ text, completed: false });
+                saveTasks();
+                renderTasks();
+                taskInput.value = '';
+                taskInput.focus();
+            }
+        }
+
+        window.toggleTask = function (index) {
+            tasks[index].completed = !tasks[index].completed;
+            saveTasks();
+            renderTasks();
+        }
+
+        window.deleteTask = function (index) {
+            const li = taskList.children[index];
+            li.style.animation = 'fadeOut 0.3s ease forwards';
+
+            setTimeout(() => {
+                tasks.splice(index, 1);
+                saveTasks();
+                renderTasks();
+            }, 300);
+        }
+
+        addBtn.addEventListener('click', addTask);
+
+        taskInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                addTask();
+            }
+        });
+
+        // Initial render
+        renderTasks();
+    </script>
+</body>
+
+</html>
